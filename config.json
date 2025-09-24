@@ -1,0 +1,122 @@
+{
+    "type": "Settings",
+    "audio": {
+        "input": {
+            "encoding": "mulaw",
+            "sample_rate": 8000
+        },
+        "output": {
+            "encoding": "mulaw",
+            "sample_rate": 8000,
+            "container": "none"
+        }
+    },
+    "agent": {
+        "language": "en",
+        "listen": {
+            "provider": {
+                "type": "deepgram",
+                "model": "nova-3",
+                "keyterms": ["hello", "goodbye"]
+            }
+        },
+        "think": {
+            "provider": {
+                "type": "open_ai",
+                "model": "gpt-4o-mini",
+                "temperature": 0.7
+            },
+            "prompt": "You are a professional pharmacy assistant. You can: 1) Get drug info, 2) Place orders, 3) Look up orders, and 4) Schedule doctor appointments. IMPORTANT: Always ask users to spell out their full name clearly when placing orders. Confirm all order details. In an emergency, if a user asks for an ambulance or describes a medical emergency, you must use the call_ambulance function immediately.",
+            "functions": [
+              {
+                "name": "call_ambulance",
+                "description": "Use this function immediately if the user mentions a medical emergency, asks to call an ambulance, or describes a situation that requires urgent medical attention like 'I'm having a heart attack', 'call an ambulance', or 'I need help now'.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {}
+                }
+              },
+              {
+                "name": "schedule_appointment",
+                "description": "Schedules a doctor's appointment for a user. Use this when a user asks to see a doctor, book an appointment, or find a specialist. You must collect the user's location, the desired doctor specialty, and the preferred date and time for the appointment.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "location": {
+                      "type": "string",
+                      "description": "The city, neighborhood, or general area where the user wants to schedule the appointment. e.g., 'downtown', 'Springfield'."
+                    },
+                    "doctor_specialty": {
+                      "type": "string",
+                      "description": "The type of doctor the user wants to see. e.g., 'general physician', 'cardiologist', 'dermatologist'."
+                    },
+                    "date": {
+                      "type": "string",
+                      "description": "The preferred date for the appointment, e.g., 'tomorrow', 'next Monday', 'October 25th'."
+                    },
+                    "time": {
+                      "type": "string",
+                      "description": "The preferred time for the appointment, e.g., 'morning', '2 PM', 'around noon'."
+                    }
+                  },
+                  "required": ["location", "doctor_specialty", "date", "time"]
+                }
+              },
+              {
+                "name": "get_drug_info",
+                "description": "Get detailed information about a specific drug. Use this function when: A customer asks about drug information, side effects, or pricing.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "drug_name": {
+                      "type": "string",
+                      "description": "Name of the drug to look up. Convert to lowercase for matching. Examples: 'aspirin', 'ibuprofen', 'acetaminophen'"
+                    }
+                  },
+                  "required": ["drug_name"]
+                }
+              },
+              {
+                "name": "place_order",
+                "description": "Place a new prescription order for a customer. Use this when a customer wants to order medication or refill a prescription. Before placing an order: Verify the drug exists and get the customer's full name.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "customer_name": {
+                      "type": "string",
+                      "description": "Customer's full name for the order. Use as provided by the customer."
+                    },
+                    "drug_name": {
+                      "type": "string",
+                      "description": "Name of the drug to order. Convert to lowercase for matching. Examples: 'aspirin', 'metformin', 'lisinopril'"
+                    }
+                  },
+                  "required": ["customer_name", "drug_name"]
+                }
+              },
+              {
+                "name": "lookup_order",
+                "description": "Look up an existing order by its ID. Use this when a customer wants to check an order status and provides an order ID.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "order_id": {
+                      "type": "integer",
+                      "description": "The order ID number to look up."
+                    }
+                  },
+                  "required": ["order_id"]
+                }
+              }
+            ]
+        },
+        "speak": {
+            "provider": {
+                "type": "deepgram",
+                "model": "aura-2-thalia-en"
+            }
+        },
+        "greeting": "Hello! I'm your pharmacy assistant. I can help with drug information, placing orders, checking order status, and scheduling doctor appointments. If you have a medical emergency, please let me know. How can I assist you today?"
+    }
+}
+
